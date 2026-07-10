@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.venv/
+venv/
+
+# Test / lint / coverage caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Build outputs
+build/
+dist/
+*.build/
+*.dist/
+*.onefile-build/
+
+# Runtime data
+temp/
+tools/
+data/
+portable.flag
+config/config.json
+config/credentials.json
+config/header_cache.json
+config/name_cache.json
+config/sudama_cache.json
+config/*.tmp
+*.log
+
+# Local secrets / signing material
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+
+# Local diagnostics / databases
+*.dmp
+*.db
+*.sqlite
+*.sqlite3
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini

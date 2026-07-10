@@ -1,0 +1,16 @@
+{
+  "config_version": 2,
+  "Custom_Steam_Path": "",
+  "Ryuu_API_Base": "https://generator.ryuu.lol",
+  "Sudama_API": "https://api.993499094.xyz/depotkeys.json",
+  "Sudama_Cache_Hours": 24,
+  "default_source": "ryuu",
+  "auto_fallback": true,
+  "theme_mode": "auto",
+  "theme_color": "#ff8c00",
+  "debug_mode": false,
+  "installed_ost_version": "",
+  "OST_Repo": "OpenSteam001/OpenSteamTool",
+  "installed_steamless_version": "",
+  "Steamless_Repo": "atom0s/Steamless"
+}

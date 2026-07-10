@@ -1,0 +1,127 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions: {}
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-release:
+    name: Build and publish Windows executable
+    runs-on: windows-2025
+    timeout-minutes: 60
+
+    permissions:
+      contents: write
+
+    env:
+      PYTHONUTF8: "1"
+      QT_QPA_PLATFORM: offscreen
+
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-release.txt
+
+      - name: Install locked release environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --requirement requirements-release.txt
+          python -m pip check
+
+      - name: Validate release tag
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          if ($env:RELEASE_TAG -notmatch '^v\d+\.\d+\.\d+$') {
+            throw "Unsupported release tag: $env:RELEASE_TAG"
+          }
+          python -c 'import os, pathlib, tomllib; data=tomllib.loads(pathlib.Path("pyproject.toml").read_text(encoding="utf-8")); expected="v" + data["project"]["version"]; actual=os.environ["RELEASE_TAG"]; raise SystemExit(0 if actual == expected else f"{actual} does not match {expected}")'
+          if ($LASTEXITCODE -ne 0) {
+            throw "Tag does not match the project version."
+          }
+
+      - name: Lint
+        run: python -m ruff check .
+
+      - name: Test
+        run: python -m pytest
+
+      - name: Build one-file executable
+        run: python build_exe.py
+
+      - name: Verify bundled resources in compiled executable
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          $exe = (Resolve-Path ".\dist\IceHub.exe").Path
+          $process = Start-Process `
+            -FilePath $exe `
+            -ArgumentList "--verify-bundle" `
+            -Wait `
+            -PassThru
+          if ($process.ExitCode -ne 0) {
+            throw "IceHub bundle verification failed with exit code $($process.ExitCode)"
+          }
+          $expectedVersion = $env:RELEASE_TAG.Substring(1) + ".0"
+          $versionInfo = (Get-Item $exe).VersionInfo
+          if ($versionInfo.FileVersion -ne $expectedVersion) {
+            throw "EXE file version '$($versionInfo.FileVersion)' does not match '$expectedVersion'."
+          }
+          if ($versionInfo.ProductVersion -ne $expectedVersion) {
+            throw "EXE product version '$($versionInfo.ProductVersion)' does not match '$expectedVersion'."
+          }
+
+      - name: Generate checksum and release notes
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash -Algorithm SHA256 ".\dist\IceHub.exe").Hash.ToLowerInvariant()
+          [System.IO.File]::WriteAllText(
+            (Join-Path $PWD "dist\SHA256SUMS.txt"),
+            "$hash *IceHub.exe`n",
+            [System.Text.UTF8Encoding]::new($false)
+          )
+          @"
+          ## IceHub $env:GITHUB_REF_NAME
+
+          Windows 10/11 x64 one-file executable built from tag `$env:GITHUB_REF_NAME` by GitHub Actions.
+
+          - Verify `IceHub.exe` against `SHA256SUMS.txt` before running it.
+          - This executable is not Authenticode-signed and may trigger Windows SmartScreen.
+          - The bundled KRKRZ `Version.dll` hash and unresolved provenance limitations are documented in `THIRD_PARTY_NOTICES.md`.
+          - Use only with software and accounts you are authorised to manage.
+          "@ | Set-Content ".\dist\RELEASE_NOTES.md" -Encoding utf8
+
+      - name: Create GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          gh release create $tag `
+            ".\dist\IceHub.exe" `
+            ".\dist\SHA256SUMS.txt" `
+            --repo $env:GITHUB_REPOSITORY `
+            --verify-tag `
+            --fail-on-no-commits `
+            --title "IceHub $tag" `
+            --notes-file ".\dist\RELEASE_NOTES.md"
+          if ($LASTEXITCODE -ne 0) {
+            throw "GitHub release creation failed with exit code $LASTEXITCODE."
+          }

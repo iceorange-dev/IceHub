@@ -1,0 +1,30 @@
+# Exact environment used for the v1.0.0 Windows release pipeline.
+# Refresh deliberately after dependency review; ordinary development continues
+# to use the compatible ranges in requirements-dev.txt.
+anyio==4.14.1
+certifi==2026.6.17
+colorama==0.4.6
+darkdetect==0.8.0
+h11==0.16.0
+httpcore==1.0.9
+httpx==0.28.1
+idna==3.18
+iniconfig==2.3.0
+Nuitka==2.8.10
+ordered-set==4.1.0
+packaging==26.2
+pluggy==1.6.0
+psutil==7.2.2
+Pygments==2.20.0
+PyQt6==6.11.0
+PyQt6-Fluent-Widgets==1.11.2
+PyQt6-Frameless-Window==0.8.1
+PyQt6-Qt6==6.11.1
+PyQt6_sip==13.11.1
+pytest==9.1.1
+pytest-asyncio==1.4.0
+pytest-qt==4.5.0
+pywin32==312
+ruff==0.15.21
+typing_extensions==4.16.0
+zstandard==0.25.0

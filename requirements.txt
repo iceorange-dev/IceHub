@@ -1,0 +1,8 @@
+# Runtime dependencies for Python 3.12.
+# Lower bounds preserve the versions the project originally targeted; upper bounds
+# prevent an unreviewed major release from changing behaviour unexpectedly.
+PyQt6>=6.4,<7
+PyQt6-Fluent-Widgets>=1.5,<2
+httpx>=0.24,<0.29
+psutil>=5.9,<8
+packaging>=24,<27
