@@ -100,7 +100,7 @@ jobs:
           @"
           ## IceHub $env:GITHUB_REF_NAME
 
-          Windows 10/11 x64 one-file executable built from tag `$env:GITHUB_REF_NAME` by GitHub Actions.
+          Windows 10/11 x64 one-file executable built from tag $env:GITHUB_REF_NAME by GitHub Actions.
 
           - Verify `IceHub.exe` against `SHA256SUMS.txt` before running it.
           - This executable is not Authenticode-signed and may trigger Windows SmartScreen.
