@@ -2,7 +2,7 @@
 # Refresh deliberately after dependency review; ordinary development continues
 # to use the compatible ranges in requirements-dev.txt.
 anyio==4.14.1
-certifi==2026.6.17
+certifi==2026.10.19
 colorama==0.4.6
 darkdetect==0.8.0
 h11==0.16.0
